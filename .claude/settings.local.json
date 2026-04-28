@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(rm -rf frontend)",
+      "Bash(npx --yes create-next-app@latest frontend --js --tailwind --app --eslint --src-dir --no-import-alias --use-npm --turbopack --no-experimental-app)",
+      "Bash(npx next *)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}

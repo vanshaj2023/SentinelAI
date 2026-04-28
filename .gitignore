@@ -1,0 +1,12 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+*.db
+.venv/
+venv/
+.env
+.env.local
+yolov8n.pt
+sample_video.mp4
+.DS_Store

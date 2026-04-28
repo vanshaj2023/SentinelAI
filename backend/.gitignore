@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.db
+venv/
+.venv/
+yolov8n.pt
+sample_video.mp4
