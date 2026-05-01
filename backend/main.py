@@ -2,17 +2,22 @@ import asyncio
 import base64
 import os
 from pathlib import Path
+from typing import Optional
 
 import cv2
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from tracker import process_frame
-from zones import check_breaches, draw_zone
+from zones import check_breaches, draw_zone, get_zone, set_zone
+from models import ZoneConfig
 from database import (
     init_db,
     save_alert,
     get_all_alerts,
+    get_alerts_in_window,
+    get_alerts_stats,
+    get_alerts_timeline,
     clear_alerts,
     alert_exists_recently,
 )
@@ -40,14 +45,45 @@ def root():
 
 
 @app.get("/alerts")
-def alerts():
-    return get_all_alerts()
+def alerts(limit: int = 100):
+    return get_all_alerts(limit=limit)
+
+
+@app.get("/alerts/stats")
+def alerts_stats():
+    return get_alerts_stats()
+
+
+@app.get("/alerts/timeline")
+def alerts_timeline(bucket_seconds: int = 60):
+    return get_alerts_timeline(bucket_seconds=bucket_seconds)
+
+
+@app.get("/alerts/window")
+def alerts_window(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    label: Optional[str] = None,
+):
+    return get_alerts_in_window(start, end, label)
 
 
 @app.delete("/alerts")
 def reset_alerts():
     clear_alerts()
     return {"status": "cleared"}
+
+
+@app.get("/zone")
+def zone_get():
+    return get_zone()
+
+
+@app.put("/zone")
+def zone_put(cfg: ZoneConfig):
+    if cfg.x2 <= cfg.x1 or cfg.y2 <= cfg.y1:
+        raise HTTPException(status_code=400, detail="Invalid zone bounds")
+    return set_zone(cfg.x1, cfg.y1, cfg.x2, cfg.y2, cfg.label)
 
 
 @app.websocket("/ws")
